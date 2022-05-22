@@ -1,73 +1,107 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityVolumeRendering;
 using System.Linq;
+using Newtonsoft.Json;
+
+[Serializable]
+public class Patients
+{
+    public int id { get; set; }
+    public string patientID { get; set; }
+    public string name { get; set; }
+    public string birthDate { get; set; }
+}
+
+[Serializable]
+public class Studies
+{
+    public int id { get; set; }
+    public int patientID { get; set; }
+    public string instanceUID { get; set; }
+    public string description { get; set; }
+    public string time { get; set; }
+}
+
+[Serializable]
+public class Series
+{
+    public int id { get; set; }
+    public int studyID { get; set; }
+    public string instanceUID { get; set; }
+    public string filepath { get; set; }
+    public string description { get; set; }
+}
+
+[Serializable]
+public class Instances
+{
+    public int id { get; set; }
+    public int seriesID { get; set; }
+    public string filename { get; set; }
+}
 
 public class PythonAPI : MonoBehaviour
 {
-    string dir = "/Users/vinicius/Downloads/test/";
+    public List<Patients> patients;
+    public List<Studies> studies;
+    public List<Series> series;
 
-    // Start is called before the first frame update
-    public void Start()
+    //public IEnumerator Upload(IEnumerable<string> files)
+    //{
+    //    List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
+
+    //    foreach (string file in files)
+    //    {
+    //        byte[] data = File.ReadAllBytes(file);
+    //        formData.Add(new MultipartFormFileSection("files", data, Path.GetFileName(file), "multipart/form-data"));
+    //    }
+
+    //    UnityWebRequest www = UnityWebRequest.Post("http://localhost:3000/dicom/upload", formData);
+    //    yield return www.SendWebRequest();
+
+    //    if (www.result != UnityWebRequest.Result.Success)
+    //    {
+    //        Debug.LogError("Could not upload the files");
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("Files successfully uploaded");
+    //    }
+    //}
+
+    public IEnumerator Get(string uri, string type)
     {
-        //StartCoroutine(GetData());
-
-        if (Directory.Exists(dir))
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
         {
-            bool recursive = true;
+            yield return request.SendWebRequest();
 
-            IEnumerable<string> fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase));
-
-            if (fileCandidates.Any())
+            if (request.result == UnityWebRequest.Result.ConnectionError)
             {
-                StartCoroutine(Upload(fileCandidates));
-
-                IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
-                IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
-                float numVolumesCreated = 0;
-
-                foreach (IImageSequenceSeries series in seriesList)
-                {
-                    VolumeDataset dataset = importer.ImportSeries(series);
-                    if (dataset != null)
-                    {
-                        VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-                        obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
-                        numVolumesCreated++;
-                    }
-                }
-            } else
-            {
-                Debug.LogError("Could not find any DICOM files to import");
+                Debug.Log("Error on get data: " + request.error);
             }
-        }
-    }
+            else
+            {
+                string json = request.downloadHandler.text;
 
-    public IEnumerator Upload(IEnumerable<string> files)
-    {
-        List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-
-        foreach (string file in files)
-        {
-            byte[] data = File.ReadAllBytes(file);
-            formData.Add(new MultipartFormFileSection("files", data, Path.GetFileName(file), "multipart/form-data"));
-        }
-
-        UnityWebRequest www = UnityWebRequest.Post("http://localhost:3000/dicom/upload", formData);
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError("Could not upload the files");
-        }
-        else
-        {
-            Debug.Log("Files successfully uploaded");
+                if (type == "patients")
+                {
+                    patients = JsonConvert.DeserializeObject<List<Patients>>(json);
+                }
+                else if (type == "studies")
+                {
+                    studies = JsonConvert.DeserializeObject<List<Studies>>(json);
+                }
+                else
+                {
+                    series = JsonConvert.DeserializeObject<List<Series>>(json);
+                }
+                
+                Debug.Log("Data successfully retrieved!");
+            }
         }
     }
 }
