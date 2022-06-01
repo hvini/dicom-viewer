@@ -47,7 +47,9 @@ public class SeriesTable : MonoBehaviour
 
         Button button = entryTransform.Find("ActionBtn").GetComponent<Button>();
         button.gameObject.SetActive(true);
-        button.onClick.AddListener(delegate { ActionButtonEvent(series.filepath); });
+
+        string path = "./dicom-api/" + series.filepath;
+        button.onClick.AddListener(delegate { ActionButtonEvent(path); });
 
         transformList.Add(entryTransform);
     }
@@ -65,9 +67,6 @@ public class SeriesTable : MonoBehaviour
 
     public void ActionButtonEvent(string filepath)
     {
-        //GameObject canvas = GameObject.Find("Canvas");
-        //canvas.SetActive(false);
-        
         CreateObject.CreateVolObject(filepath);
     }
 }

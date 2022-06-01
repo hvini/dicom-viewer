@@ -7,15 +7,13 @@ using UnityVolumeRendering;
 
 public class CreateObject : MonoBehaviour
 {
-    public static void CreateVolObject(string dir)
+    public static void CreateVolObject(string filepath)
     {
-        string path = "/" + dir;
-        if (Directory.Exists(dir))
+        if (Directory.Exists(filepath))
         {
-            Debug.Log("exists");
             bool recursive = true;
 
-            IEnumerable<string> fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+            IEnumerable<string> fileCandidates = Directory.EnumerateFiles(filepath, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
                 .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase));
 
             if (fileCandidates.Any())
@@ -31,9 +29,14 @@ public class CreateObject : MonoBehaviour
                     {
                         VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                         obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
+
+                        Camera.main.transform.position = new Vector3(obj.transform.position.x, obj.transform.position.y, -0.7f);
                         numVolumesCreated++;
                     }
                 }
+
+                GameObject canvas = GameObject.Find("Canvas");
+                canvas.SetActive(false);
             }
             else
             {

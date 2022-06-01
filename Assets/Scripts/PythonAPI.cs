@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityVolumeRendering;
-using System.Linq;
 using Newtonsoft.Json;
+using UnityVolumeRendering;
 
 [Serializable]
 public class Patients
@@ -49,6 +48,11 @@ public class PythonAPI : MonoBehaviour
     public List<Patients> patients;
     public List<Studies> studies;
     public List<Series> series;
+
+    private void Start()
+    {
+        StartCoroutine(GetData());
+    }
 
     //public IEnumerator Upload(IEnumerable<string> files)
     //{
@@ -101,6 +105,33 @@ public class PythonAPI : MonoBehaviour
                 }
                 
                 Debug.Log("Data successfully retrieved!");
+            }
+        }
+    }
+
+    public IEnumerator GetData()
+    {
+        string path = "/Users/vinicius/Downloads/Angosto_Calvet_Antonio/AngioTc_Abdomen_I_Pelvis - 3494/ARTERIAL_IMR_402";
+        string uri = "http://localhost:3000/dicom/3d?path=" + path;
+        Debug.Log("START");
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                Debug.Log("Error on get data: " + request.error);
+            }
+            else
+            {
+                string json = request.downloadHandler.text;
+
+                VolumeDataset dataset = JsonConvert.DeserializeObject<VolumeDataset>(json);
+
+                dataset.FixDimensions();
+
+                VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                obj.transform.position = new Vector3(1, 0, 0);
             }
         }
     }
