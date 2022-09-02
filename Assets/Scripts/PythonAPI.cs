@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using UnityVolumeRendering;
+using System.Text;
+using System.Linq;
+using CandyCoded.env;
 
 [Serializable]
 public class Patients
@@ -32,6 +35,7 @@ public class Series
     public int studyID { get; set; }
     public string instanceUID { get; set; }
     public string filepath { get; set; }
+    public string bitspath { get; set; }
     public string description { get; set; }
 }
 
@@ -48,34 +52,20 @@ public class PythonAPI : MonoBehaviour
     public List<Patients> patients;
     public List<Studies> studies;
     public List<Series> series;
+    private string baseURL, basePath;
 
     private void Start()
     {
-        StartCoroutine(GetData());
+        if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
+        {
+            baseURL = url;
+        }
+
+        if (env.TryParseEnvironmentVariable("BASE_PATH", out string path))
+        {
+            basePath = path;
+        }
     }
-
-    //public IEnumerator Upload(IEnumerable<string> files)
-    //{
-    //    List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-
-    //    foreach (string file in files)
-    //    {
-    //        byte[] data = File.ReadAllBytes(file);
-    //        formData.Add(new MultipartFormFileSection("files", data, Path.GetFileName(file), "multipart/form-data"));
-    //    }
-
-    //    UnityWebRequest www = UnityWebRequest.Post("http://localhost:3000/dicom/upload", formData);
-    //    yield return www.SendWebRequest();
-
-    //    if (www.result != UnityWebRequest.Result.Success)
-    //    {
-    //        Debug.LogError("Could not upload the files");
-    //    }
-    //    else
-    //    {
-    //        Debug.Log("Files successfully uploaded");
-    //    }
-    //}
 
     public IEnumerator Get(string uri, string type)
     {
@@ -109,11 +99,12 @@ public class PythonAPI : MonoBehaviour
         }
     }
 
-    public IEnumerator GetData()
+    public IEnumerator GetData(Series series)
     {
-        string path = "/Users/vinicius/Downloads/Angosto_Calvet_Antonio/AngioTc_Abdomen_I_Pelvis - 3494/ARTERIAL_IMR_402";
-        string uri = "http://localhost:3000/dicom/3d?path=" + path;
-        Debug.Log("START");
+        string path = basePath + series.filepath;
+        string bitspath = basePath + series.bitspath;
+
+        string uri = baseURL + "dicom/3d?path=" + path + "&bitspath=" + bitspath;
         using (UnityWebRequest request = UnityWebRequest.Get(uri))
         {
             yield return request.SendWebRequest();
@@ -130,9 +121,41 @@ public class PythonAPI : MonoBehaviour
 
                 dataset.FixDimensions();
 
-                VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
                 obj.transform.position = new Vector3(1, 0, 0);
+
+                GameObject canvas = GameObject.Find("Canvas");
+                canvas.SetActive(false);
+
+                if (series.bitspath == null) {
+                    series.bitspath = "bits/" + series.instanceUID + ".bits";
+                    StartCoroutine(Put(baseURL + "series/" + series.id + "/update", JsonConvert.SerializeObject(series)));
+                }
             }
         }
+    }
+
+    public IEnumerator Put(string url, string bodyJsonString)
+    {
+        byte[] data = Encoding.UTF8.GetBytes(bodyJsonString);
+        using (UnityWebRequest request = UnityWebRequest.Put(url, data))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                Debug.Log("Error on get data: " + request.error);
+            }
+            else
+            {
+                string json = request.downloadHandler.text;
+                Series result = JsonConvert.DeserializeObject<Series>(json);
+
+                Series obj = series.FirstOrDefault(x => x.id == result.id);
+                if (obj != null) obj = result;
+            }
+        };
     }
 }

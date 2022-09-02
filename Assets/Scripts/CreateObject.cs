@@ -29,6 +29,7 @@ public class CreateObject : MonoBehaviour
                     {
                         VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                         obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
+                        obj.gameObject.AddComponent<LookControls>();
 
                         Camera.main.transform.position = new Vector3(obj.transform.position.x, obj.transform.position.y, -0.7f);
                         numVolumesCreated++;

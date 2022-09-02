@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using CandyCoded.env;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,15 @@ public class SeriesTable : MonoBehaviour
     private Transform seriesEntryTemplate;
     private PythonAPI pyAPI;
     private List<Transform> seriesEntryTransformList;
+    private string baseURL;
+
+    private void Awake()
+    {
+        if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
+        {
+            baseURL = url;
+        }
+    }
 
     public IEnumerator GetStudySeries(int id, GameObject studiesTable)
     {
@@ -17,7 +27,7 @@ public class SeriesTable : MonoBehaviour
 
         pyAPI = GameObject.Find("PyAPI").GetComponent<PythonAPI>();
         string type = "series";
-        yield return StartCoroutine(pyAPI.Get(Constants.API_BASE_URL + "studies/" + id + "/series", type));
+        yield return StartCoroutine(pyAPI.Get(baseURL + "studies/" + id + "/series", type));
 
         studiesTable.SetActive(false);
 
@@ -48,8 +58,7 @@ public class SeriesTable : MonoBehaviour
         Button button = entryTransform.Find("ActionBtn").GetComponent<Button>();
         button.gameObject.SetActive(true);
 
-        string path = "./dicom-api/" + series.filepath;
-        button.onClick.AddListener(delegate { ActionButtonEvent(path); });
+        button.onClick.AddListener(delegate { ActionButtonEvent(series); });
 
         transformList.Add(entryTransform);
     }
@@ -65,8 +74,8 @@ public class SeriesTable : MonoBehaviour
         }
     }
 
-    public void ActionButtonEvent(string filepath)
+    public void ActionButtonEvent(Series series)
     {
-        CreateObject.CreateVolObject(filepath);
+        StartCoroutine(pyAPI.GetData(series));
     }
 }

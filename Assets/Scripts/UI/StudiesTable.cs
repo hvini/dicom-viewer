@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using CandyCoded.env;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,15 @@ public class StudiesTable : MonoBehaviour
     private Transform studiesEntryTemplate;
     private PythonAPI pyAPI;
     private List<Transform> studiesEntryTransformList;
+    private string baseURL;
+
+    private void Awake()
+    {
+        if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
+        {
+            baseURL = url;
+        }
+    }
 
     public IEnumerator GetPatientStudies(int id, GameObject patientsTable)
     {
@@ -17,7 +27,7 @@ public class StudiesTable : MonoBehaviour
 
         pyAPI = GameObject.Find("PyAPI").GetComponent<PythonAPI>();
         string type = "studies";
-        yield return StartCoroutine(pyAPI.Get(Constants.API_BASE_URL + "patients/" + id + "/studies", type));
+        yield return StartCoroutine(pyAPI.Get(baseURL + "patients/" + id + "/studies", type));
 
         patientsTable.SetActive(false);
 

@@ -5,7 +5,7 @@ namespace UnityVolumeRendering
 {
     public class VolumeObjectFactory
     {
-        public static VolumeRenderedObject CreateObject(VolumeDataset dataset)
+        public static VolumeRenderedObject CreateObject(VolumeDataset dataset, Series? series = null)
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
@@ -33,7 +33,7 @@ namespace UnityVolumeRendering
             TransferFunction2D tf2D = TransferFunctionDatabase.CreateTransferFunction2D();
             volObj.transferFunction2D = tf2D;
 
-            meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+            meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture(series));
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", null);
             meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
             meshRenderer.sharedMaterial.SetTexture("_TFTex", tfTexture);
