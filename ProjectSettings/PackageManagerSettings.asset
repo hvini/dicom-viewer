@@ -30,6 +30,8 @@ MonoBehaviour:
     m_Scopes:
     - com.de-panther.webxr
     - com.de-panther.webxr-interactions
+    - com.de-panther.webxr-input-profiles-loader
+    - com.atteneder.gltfast
     m_IsDefault: 0
     m_Capabilities: 0
   m_UserSelectedRegistryName: package.openupm.com
@@ -43,6 +45,8 @@ MonoBehaviour:
       m_Scopes:
       - com.de-panther.webxr
       - com.de-panther.webxr-interactions
+      - com.de-panther.webxr-input-profiles-loader
+      - com.atteneder.gltfast
       m_IsDefault: 0
       m_Capabilities: 0
     m_Modified: 0
@@ -51,4 +55,6 @@ MonoBehaviour:
     m_Scopes:
     - com.de-panther.webxr
     - com.de-panther.webxr-interactions
+    - com.de-panther.webxr-input-profiles-loader
+    - com.atteneder.gltfast
     m_SelectedScopeIndex: 0

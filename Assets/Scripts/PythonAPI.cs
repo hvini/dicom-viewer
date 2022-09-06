@@ -122,7 +122,7 @@ public class PythonAPI : MonoBehaviour
                 dataset.FixDimensions();
 
                 VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
-                obj.transform.position = new Vector3(1, 0, 0);
+                obj.transform.position = new Vector3(1, 0, 65);
 
                 GameObject canvas = GameObject.Find("Canvas");
                 canvas.SetActive(false);

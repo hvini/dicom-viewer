@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "com.de-panther.vrteleporter": "https://github.com/De-Panther/Simple-WebXR-Teleporter.git?path=/Packages/VRTeleporter",
     "com.de-panther.webxr": "0.15.0-preview",
+    "com.de-panther.webxr-input-profiles-loader": "0.4.0",
     "com.de-panther.webxr-interactions": "0.15.0-preview",
     "com.unity.collab-proxy": "1.15.4",
     "com.unity.ide.rider": "2.0.7",
@@ -50,7 +52,9 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.de-panther.webxr",
-        "com.de-panther.webxr-interactions"
+        "com.de-panther.webxr-interactions",
+        "com.de-panther.webxr-input-profiles-loader",
+        "com.atteneder.gltfast"
       ]
     }
   ]
