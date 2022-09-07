@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | %UNITY_WEB_NAME%</title>
     <meta name="description" content="%UNITY_CUSTOM_DESCRIPTION%">
@@ -19,7 +19,6 @@
           onsuccess();
         }
       }
-      %UNITY_CUSTOM_WEBXR_POLYFILL_CONFIG%
       var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%", {onProgress: UnityProgress});
     </script>
   </head>
@@ -46,10 +45,10 @@
       }, false);
       
       enterARButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleAR();
+        document.dispatchEvent(new CustomEvent('toggleAR', {}));
       }, false);
       enterVRButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleVR();
+        document.dispatchEvent(new CustomEvent('toggleVR', {}));
       }, false);
     </script>
   </body>

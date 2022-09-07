@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | {{{ PRODUCT_NAME }}}</title>
     <meta name="description" content="{{{ DESCRIPTION }}}">
@@ -54,7 +54,6 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var unityInstance = null;
-      {{{ WEBXR_POLYFILL_CONFIG }}}
 
 #if BACKGROUND_FILENAME
       canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
@@ -92,10 +91,10 @@
       }, false);
 
       enterARButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleAR();
+        document.dispatchEvent(new CustomEvent('toggleAR', {}));
       }, false);
       enterVRButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleVR();
+        document.dispatchEvent(new CustomEvent('toggleVR', {}));
       }, false);
     </script>
   </body>

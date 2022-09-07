@@ -53,7 +53,6 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var unityInstance = null;
-      {{{ WEBXR_POLYFILL_CONFIG }}}
 
       canvasContainer.style.width = "{{{ WIDTH }}}px";
       canvasContainer.style.height = "{{{ HEIGHT }}}px";
@@ -93,10 +92,10 @@
       }, false);
 
       enterARButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleAR();
+        document.dispatchEvent(new CustomEvent('toggleAR', {}));
       }, false);
       enterVRButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleVR();
+        document.dispatchEvent(new CustomEvent('toggleVR', {}));
       }, false);
     </script>
   </body>

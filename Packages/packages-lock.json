@@ -1,15 +1,14 @@
 {
   "dependencies": {
     "com.atteneder.gltfast": {
-      "version": "4.4.8",
+      "version": "2.5.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.modules.unitywebrequesttexture": "1.0.0",
-        "com.unity.mathematics": "1.2.1",
-        "com.unity.burst": "1.4.11"
+        "com.unity.mathematics": "1.2.1"
       },
       "url": "https://package.openupm.com"
     },
@@ -23,7 +22,7 @@
       "hash": "176559101fa918ec88f4f918f8c5d8ff499214d5"
     },
     "com.de-panther.webxr": {
-      "version": "0.15.0-preview",
+      "version": "0.6.0-preview",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -32,32 +31,23 @@
       "url": "https://package.openupm.com"
     },
     "com.de-panther.webxr-input-profiles-loader": {
-      "version": "0.4.0",
+      "version": "0.3.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "2.0.0",
-        "com.atteneder.gltfast": "4.4.8"
+        "com.atteneder.gltfast": "2.5.0"
       },
       "url": "https://package.openupm.com"
     },
     "com.de-panther.webxr-interactions": {
-      "version": "0.15.0-preview",
+      "version": "0.6.0-preview",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.de-panther.webxr": "0.15.0-preview"
+        "com.de-panther.webxr": "0.6.0-preview"
       },
       "url": "https://package.openupm.com"
-    },
-    "com.unity.burst": {
-      "version": "1.4.11",
-      "depth": 2,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.mathematics": "1.2.1"
-      },
-      "url": "https://packages.unity.com"
     },
     "com.unity.collab-proxy": {
       "version": "1.15.4",
