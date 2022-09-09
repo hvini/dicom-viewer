@@ -8,6 +8,7 @@ using UnityVolumeRendering;
 using System.Text;
 using System.Linq;
 using CandyCoded.env;
+using UnityEngine.UI;
 
 [Serializable]
 public class Patients
@@ -52,18 +53,18 @@ public class PythonAPI : MonoBehaviour
     public List<Patients> patients;
     public List<Studies> studies;
     public List<Series> series;
-    private string baseURL, basePath;
+
+    private string baseURL;
+
+    private GameObject currentObj = null;
+
+    private Button[] seriesBtns = null;
 
     private void Start()
     {
         if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
         {
             baseURL = url;
-        }
-
-        if (env.TryParseEnvironmentVariable("BASE_PATH", out string path))
-        {
-            basePath = path;
         }
     }
 
@@ -101,8 +102,14 @@ public class PythonAPI : MonoBehaviour
 
     public IEnumerator GetData(Series series)
     {
-        string path = basePath + series.filepath;
-        string bitspath = basePath + series.bitspath;
+        seriesBtns = GameObject.Find("Canvas")
+            .transform.Find("SeriesTable")
+            .transform.Find("SeriesEntryContainer").GetComponentsInChildren<Button>();
+
+        DisableBtns(seriesBtns);
+
+        string path = series.filepath;
+        string bitspath = series.bitspath;
 
         string uri = baseURL + "dicom/3d?path=" + path + "&bitspath=" + bitspath;
         using (UnityWebRequest request = UnityWebRequest.Get(uri))
@@ -121,16 +128,36 @@ public class PythonAPI : MonoBehaviour
 
                 dataset.FixDimensions();
 
+                if (series.bitspath != null)
+                {
+                    UnityWebRequest www = UnityWebRequest.Get(baseURL + series.bitspath);
+                    yield return www.SendWebRequest();
+
+                    dataset.jdlskald = www.downloadHandler.data;
+                }
+
+                if (currentObj != null) Destroy(currentObj);
+
                 VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
-                obj.transform.position = new Vector3(1, 0, 65);
+                obj.tag = "Interactable";
 
-                GameObject canvas = GameObject.Find("Canvas");
-                canvas.SetActive(false);
+                obj.gameObject.AddComponent<Rigidbody>();
+                obj.GetComponent<Rigidbody>().useGravity = false;
 
-                if (series.bitspath == null) {
+                obj.gameObject.AddComponent<BoxCollider>();
+                obj.gameObject.AddComponent<MouseDrag>();
+
+                obj.transform.position = new Vector3(0.0f, -1.0f, 1.3f);
+
+                currentObj = obj.gameObject;
+
+                if (series.bitspath == null)
+                {
                     series.bitspath = "bits/" + series.instanceUID + ".bits";
                     StartCoroutine(Put(baseURL + "series/" + series.id + "/update", JsonConvert.SerializeObject(series)));
                 }
+
+                EnableBtns(seriesBtns);
             }
         }
     }
@@ -157,5 +184,22 @@ public class PythonAPI : MonoBehaviour
                 if (obj != null) obj = result;
             }
         };
+    }
+
+    private void DisableBtns(Button[] btns)
+    {
+        foreach (Button btn in btns)
+        {
+            btn.interactable = false;
+        }
+    }
+
+
+    private void EnableBtns(Button[] btns)
+    {
+        foreach (Button btn in btns)
+        {
+            btn.interactable = true;
+        }
     }
 }

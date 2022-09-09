@@ -34,7 +34,9 @@ namespace UnityVolumeRendering
         private Texture3D gradientTexture = null;
 
         private string basePath;
-        
+
+        public byte[] jdlskald;
+
         public Texture3D GetDataTexture(Series? series = null)
         {
             if (dataTexture == null)
@@ -133,7 +135,7 @@ namespace UnityVolumeRendering
                 basePath = path;
             }
 
-            if (series.bitspath == null)
+            if (jdlskald == null)
             {
                 float minValue = GetMinDataValue();
                 float maxValue = GetMaxDataValue();
@@ -154,7 +156,6 @@ namespace UnityVolumeRendering
                     }
 
                     string bitspath = basePath + "bits/";
-                    if (!Directory.Exists(bitspath)) Directory.CreateDirectory(bitspath);
                     File.WriteAllBytes(bitspath + series.instanceUID + ".bits", bytes);
                     texture.SetPixelData(bytes, 0);
                 }
@@ -170,8 +171,7 @@ namespace UnityVolumeRendering
             }
             else
             {
-                byte[] bytes = File.ReadAllBytes(basePath + series.bitspath);
-                texture.SetPixelData(bytes, 0);
+                texture.SetPixelData(jdlskald, 0);
             }
 
             texture.Apply();
