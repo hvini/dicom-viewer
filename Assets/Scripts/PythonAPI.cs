@@ -59,6 +59,8 @@ public class PythonAPI : MonoBehaviour
     private GameObject currentObj = null;
 
     private Button[] seriesBtns = null;
+    private Button patientsBtn = null;
+    private Button studiesBtn = null;
 
     private void Start()
     {
@@ -66,6 +68,12 @@ public class PythonAPI : MonoBehaviour
         {
             baseURL = url;
         }
+
+        patientsBtn = GameObject.Find("Canvas")
+            .transform.Find("PatientsBtn").GetComponent<Button>();
+
+        studiesBtn = GameObject.Find("Canvas")
+            .transform.Find("StudiesBtn").GetComponent<Button>();
     }
 
     public IEnumerator Get(string uri, string type)
@@ -108,6 +116,8 @@ public class PythonAPI : MonoBehaviour
 
         DisableBtns(seriesBtns);
 
+        if (currentObj != null) Destroy(currentObj);
+
         string path = series.filepath;
         string bitspath = series.bitspath;
 
@@ -135,8 +145,6 @@ public class PythonAPI : MonoBehaviour
 
                     dataset.jdlskald = www.downloadHandler.data;
                 }
-
-                if (currentObj != null) Destroy(currentObj);
 
                 VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
                 obj.tag = "Interactable";
@@ -188,6 +196,11 @@ public class PythonAPI : MonoBehaviour
 
     private void DisableBtns(Button[] btns)
     {
+        // disable header buttons
+        patientsBtn.interactable = false;
+        studiesBtn.interactable = false;
+
+        // disable action buttons
         foreach (Button btn in btns)
         {
             btn.interactable = false;
@@ -197,6 +210,11 @@ public class PythonAPI : MonoBehaviour
 
     private void EnableBtns(Button[] btns)
     {
+        // enable header buttons
+        patientsBtn.interactable = true;
+        studiesBtn.interactable = true;
+
+        // enable action buttons
         foreach (Button btn in btns)
         {
             btn.interactable = true;
