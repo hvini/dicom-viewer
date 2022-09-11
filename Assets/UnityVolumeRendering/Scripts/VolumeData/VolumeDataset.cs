@@ -33,8 +33,6 @@ namespace UnityVolumeRendering
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
 
-        private string basePath;
-
         public byte[] jdlskald;
 
         public Texture3D GetDataTexture(Series? series = null)
@@ -130,49 +128,39 @@ namespace UnityVolumeRendering
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
 
-            if (env.TryParseEnvironmentVariable("BASE_PATH", out string path))
-            {
-                basePath = path;
-            }
+            //float minValue = GetMinDataValue();
+            //float maxValue = GetMaxDataValue();
+            //float maxRange = maxValue - minValue;
 
-            if (jdlskald == null)
-            {
-                float minValue = GetMinDataValue();
-                float maxValue = GetMaxDataValue();
-                float maxRange = maxValue - minValue;
+            //bool isHalfFloat = texformat == TextureFormat.RHalf;
+            //try
+            //{
+            //    // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
+            //    int sampleSize = isHalfFloat ? 2 : 4;
+            //    byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
+            //    for (int iData = 0; iData < data.Length; iData++)
+            //    {
+            //        float pixelValue = (float)(data[iData] - minValue) / maxRange;
+            //        byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(pixelValue)) : BitConverter.GetBytes(pixelValue);
 
-                bool isHalfFloat = texformat == TextureFormat.RHalf;
-                try
-                {
-                    // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
-                    int sampleSize = isHalfFloat ? 2 : 4;
-                    byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
-                    for (int iData = 0; iData < data.Length; iData++)
-                    {
-                        float pixelValue = (float)(data[iData] - minValue) / maxRange;
-                        byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(pixelValue)) : BitConverter.GetBytes(pixelValue);
+            //        Array.Copy(pixelBytes, 0, bytes, iData * sampleSize, sampleSize);
+            //    }
 
-                        Array.Copy(pixelBytes, 0, bytes, iData * sampleSize, sampleSize);
-                    }
+            //    string bitspath = basePath + "bits/";
+            //    File.WriteAllBytes(bitspath + series.instanceUID + ".bits", bytes);
+            //    texture.SetPixelData(bytes, 0);
+            //}
 
-                    string bitspath = basePath + "bits/";
-                    File.WriteAllBytes(bitspath + series.instanceUID + ".bits", bytes);
-                    texture.SetPixelData(bytes, 0);
-                }
+            //catch (OutOfMemoryException ex)
+            //{
+            //    Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
+            //    for (int x = 0; x < dimX; x++)
+            //        for (int y = 0; y < dimY; y++)
+            //            for (int z = 0; z < dimZ; z++)
+            //                texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
+            //}
 
-                catch (OutOfMemoryException ex)
-                {
-                    Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
-                    for (int x = 0; x < dimX; x++)
-                        for (int y = 0; y < dimY; y++)
-                            for (int z = 0; z < dimZ; z++)
-                                texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
-                }
-            }
-            else
-            {
-                texture.SetPixelData(jdlskald, 0);
-            }
+            texture.SetPixelData(jdlskald, 0);
 
             texture.Apply();
             return texture;

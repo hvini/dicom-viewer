@@ -159,12 +159,6 @@ public class PythonAPI : MonoBehaviour
 
                 currentObj = obj.gameObject;
 
-                if (series.bitspath == null)
-                {
-                    series.bitspath = "bits/" + series.instanceUID + ".bits";
-                    StartCoroutine(Put(baseURL + "series/" + series.id + "/update", JsonConvert.SerializeObject(series)));
-                }
-
                 EnableBtns(seriesBtns);
             }
         }
