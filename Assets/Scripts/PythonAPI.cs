@@ -9,6 +9,7 @@ using System.Text;
 using System.Linq;
 using CandyCoded.env;
 using UnityEngine.UI;
+using System.IO;
 
 [Serializable]
 public class Patients
@@ -62,6 +63,8 @@ public class PythonAPI : MonoBehaviour
     private Button patientsBtn = null;
     private Button studiesBtn = null;
 
+    private Text loadingTxt = null;
+
     private void Start()
     {
         if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
@@ -74,6 +77,9 @@ public class PythonAPI : MonoBehaviour
 
         studiesBtn = GameObject.Find("Canvas")
             .transform.Find("StudiesBtn").GetComponent<Button>();
+
+        loadingTxt = GameObject.Find("Canvas")
+            .transform.Find("LoadingTxt").GetComponent<Text>();
     }
 
     public IEnumerator Get(string uri, string type)
@@ -138,13 +144,20 @@ public class PythonAPI : MonoBehaviour
 
                 dataset.FixDimensions();
 
-                if (series.bitspath != null)
-                {
-                    UnityWebRequest www = UnityWebRequest.Get(baseURL + series.bitspath);
-                    yield return www.SendWebRequest();
+                if (bitspath == null) bitspath = dataset.bitspath;
 
-                    dataset.jdlskald = www.downloadHandler.data;
+                UnityWebRequest www = UnityWebRequest.Get(baseURL + bitspath);
+                var operation = www.SendWebRequest();
+
+                while (!operation.isDone)
+                {
+                    loadingTxt.text = Mathf.Round(www.downloadProgress * 100).ToString() + "%";
+                    yield return null;
                 }
+
+                loadingTxt.text = "";
+
+                dataset.jdlskald = www.downloadHandler.data;
 
                 VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
                 obj.tag = "Interactable";

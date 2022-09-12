@@ -33,6 +33,8 @@ namespace UnityVolumeRendering
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
 
+        public string bitspath;
+
         public byte[] jdlskald;
 
         public Texture3D GetDataTexture(Series? series = null)
