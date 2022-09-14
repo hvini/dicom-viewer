@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System;
+using CandyCoded.env;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -14,7 +15,8 @@ public class NetworkManager : MonoBehaviour
     private void Awake()
     {
         isMaster = false;
-        websocket = new WebSocket("wss://172.17.56.238:3230");
+
+        if (env.TryParseEnvironmentVariable("WSS", out string wss)) websocket = new WebSocket(wss);
     }
 
     // Start is called before the first frame update

@@ -1,9 +1,10 @@
 {
-    "name": "QuickVR",
+    "name": "GalaxyUnity",
     "rootNamespace": "",
     "references": [
-        "GUID:fd4abe4ffe74ef1448afe15c6cb36bb7",
-        "GUID:6d0bcca59f23641bf999229cb8632ff2"
+        "GUID:0022c094e0c7f481288196a6d3e9ce33",
+        "GUID:16652594ba47e4082854eed959a4b090",
+        "GUID:fd4abe4ffe74ef1448afe15c6cb36bb7"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

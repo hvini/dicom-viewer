@@ -12,12 +12,16 @@ public class SeriesTable : MonoBehaviour
     private List<Transform> seriesEntryTransformList;
     private string baseURL;
 
+    private NetworkManager networkManager;
+
     private void Awake()
     {
         if (env.TryParseEnvironmentVariable("BASE_URL", out string url))
         {
             baseURL = url;
         }
+
+        networkManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
     }
 
     public IEnumerator GetStudySeries(int id, GameObject studiesTable)
@@ -74,8 +78,9 @@ public class SeriesTable : MonoBehaviour
         }
     }
 
-    public void ActionButtonEvent(Series series)
+    async public void ActionButtonEvent(Series series)
     {
+        if (networkManager.isMaster) await networkManager.Send("masterObj", series);
         StartCoroutine(pyAPI.GetData(series));
     }
 }

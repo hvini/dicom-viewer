@@ -42,10 +42,10 @@ public class ProjectionPlane : MonoBehaviour
     Matrix4x4 m;
     public Matrix4x4 M { get => m; }
 
-    private NetworkManager networkManager;
-
     private int median;
     public int screen, screens;
+
+    private NetworkManager networkManager;
 
     private void OnDrawGizmos()
     {
@@ -62,6 +62,11 @@ public class ProjectionPlane : MonoBehaviour
             var planeCenter = BottomLeft + ((TopRight - BottomLeft) * 0.5f);
             Gizmos.DrawLine(planeCenter, planeCenter + DirNormal);
         }
+    }
+
+    private void Awake()
+    {
+        networkManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
     }
 
     void Start()
@@ -86,8 +91,6 @@ public class ProjectionPlane : MonoBehaviour
             bottomTrans = bottom.transform;
 
         }
-
-        networkManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
 
         networkManager.websocket.OnMessage += (bytes) =>
         {
@@ -115,11 +118,14 @@ public class ProjectionPlane : MonoBehaviour
                     else
                     {
                         GameObject.Find("WebXRCameraSet").SetActive(false);
+                        GameObject.Find("Canvas").SetActive(false);
+                        GameObject.Find("EventSystem").SetActive(false);
+
+                        screen = screenValue;
                     }
                 }
             }
         };
-
 
         BottomLeft = transform.TransformPoint(new Vector3(-AspectRatio.x, -AspectRatio.y, 0));
         BottomRight = transform.TransformPoint(new Vector3(AspectRatio.x, -AspectRatio.y, 0));
