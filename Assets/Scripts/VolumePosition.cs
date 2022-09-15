@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -54,29 +53,29 @@ public class VolumePosition : MonoBehaviour
     {
         if (networkManager.isMaster)
         {
-            if (oldPosition != _transform.localPosition)
+            if (oldPosition != _transform.position)
             {
-                oldPosition = _transform.localPosition;
+                oldPosition = _transform.position;
 
                 Movement movement = new Movement()
                 {
-                    pX = _transform.localPosition.x,
-                    pY = _transform.localPosition.y,
-                    pZ = _transform.localPosition.z
+                    pX = _transform.position.x,
+                    pY = _transform.position.y,
+                    pZ = _transform.position.z
                 };
 
                 await networkManager.Send("objectMov", movement);
             }
 
-            if (oldEulerAngles != _transform.localRotation.eulerAngles)
+            if (oldEulerAngles != _transform.rotation.eulerAngles)
             {
-                oldEulerAngles = _transform.localRotation.eulerAngles;
+                oldEulerAngles = _transform.rotation.eulerAngles;
 
                 Rotation rotation = new Rotation()
                 {
-                    rX = _transform.localRotation.eulerAngles.x,
-                    rY = _transform.localRotation.eulerAngles.y,
-                    rZ = _transform.localRotation.eulerAngles.z
+                    rX = _transform.rotation.eulerAngles.x,
+                    rY = _transform.rotation.eulerAngles.y,
+                    rZ = _transform.rotation.eulerAngles.z
                 };
 
                 await networkManager.Send("objectRot", rotation);

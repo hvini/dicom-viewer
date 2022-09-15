@@ -29,46 +29,9 @@ public class ProjectionPlaneCamera : MonoBehaviour
 
     private Camera cam;
 
-    private NetworkManager networkManager;
-
-    private int MASTER_MOV_LENGTH = 9;
-
     private void Awake()
     {
         cam = GetComponent<Camera>();
-        networkManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
-    }
-
-    private void Start()
-    {
-        networkManager.websocket.OnMessage += (bytes) =>
-        {
-            if (!networkManager.isMaster)
-            {
-                if (bytes.Length > MASTER_MOV_LENGTH)
-                {
-                    string code = Encoding.UTF8.GetString(bytes, 0, MASTER_MOV_LENGTH);
-                    int dataLength = bytes.Length - MASTER_MOV_LENGTH;
-                    byte[] data = new byte[dataLength];
-                    data = bytes.Skip(MASTER_MOV_LENGTH).Take(dataLength).ToArray();
-
-                    if (code.Equals("headRotat"))
-                    {
-                        Rotation rotation = (Rotation)networkManager.ParseMessage(data);
-                        ProjectionScreen.transform.eulerAngles = new Vector3(rotation.rX, rotation.rY, rotation.rZ);
-                    }
-                    else if (code.Equals("headMovem"))
-                    {
-                        Movement movement = (Movement)networkManager.ParseMessage(data);
-                        ProjectionScreen.transform.localPosition = new Vector3(movement.pX, movement.pY, movement.pZ);
-                    } else if (code.Equals("bodyPosit"))
-                    {
-                        Movement movement = (Movement)networkManager.ParseMessage(data);
-                        ProjectionScreen.transform.position = new Vector3(movement.pX, movement.pY, movement.pZ);
-                    }
-                }
-            }
-        };
     }
 
     private void OnDrawGizmos()

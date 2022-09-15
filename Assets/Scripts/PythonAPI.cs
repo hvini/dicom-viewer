@@ -188,18 +188,25 @@ public class PythonAPI : MonoBehaviour
                         dataset.jdlskald = request2.downloadHandler.data;
 
                         VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
-
-                        obj.tag = "Interactable";
-
-                        obj.gameObject.AddComponent<Rigidbody>();
-                        obj.GetComponent<Rigidbody>().useGravity = false;
-
-                        obj.gameObject.AddComponent<BoxCollider>();
-                        obj.gameObject.AddComponent<MouseDrag>();
-                        obj.gameObject.AddComponent<VolumePosition>();
-
                         obj.transform.position = new Vector3(0.0f, -1.0f, 1.3f);
 
+                        if (!networkManager.isMaster)
+                        {
+                            obj.transform.localScale = new Vector3(10.0f, 10.0f, 10.0f);
+                        }
+                        else
+                        {
+                            obj.tag = "Interactable";
+
+                            obj.gameObject.AddComponent<Rigidbody>();
+                            obj.GetComponent<Rigidbody>().useGravity = false;
+                            obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
+                            obj.gameObject.AddComponent<BoxCollider>();
+                            obj.gameObject.AddComponent<MouseDrag>();    
+                        }
+
+                        obj.gameObject.AddComponent<VolumePosition>();
                         currentObj = obj.gameObject;
 
                         //EnableBtns(seriesBtns);
