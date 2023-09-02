@@ -52,12 +52,12 @@ public class PatientsTable : MonoBehaviour
 
         Button button = entryTransform.Find("ActionBtn").GetComponent<Button>();
         button.gameObject.SetActive(true);
-        button.onClick.AddListener(delegate { ActionButtonEvent(patient.id); });
+        button.onClick.AddListener(delegate { ActionButtonEvent(patient.patientID); });
 
         transformList.Add(entryTransform);
     }
 
-    public void ActionButtonEvent(int id)
+    public void ActionButtonEvent(string id)
     {
         StudiesTable studiesTable = GameObject.Find("Canvas").transform.Find("StudiesTable").GetComponent<StudiesTable>();
 

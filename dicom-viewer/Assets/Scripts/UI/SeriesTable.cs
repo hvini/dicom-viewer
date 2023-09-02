@@ -22,14 +22,13 @@ public class SeriesTable : MonoBehaviour
         }
 
         networkManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
+        pyAPI = GameObject.Find("PyAPI").GetComponent<PythonAPI>();
     }
 
-    public IEnumerator GetStudySeries(int id, GameObject studiesTable)
+    public IEnumerator GetStudySeries(string id, GameObject studiesTable)
     {
-
         DestroyAll(seriesEntryTransformList);
 
-        pyAPI = GameObject.Find("PyAPI").GetComponent<PythonAPI>();
         string type = "series";
         yield return StartCoroutine(pyAPI.Get(baseURL + "studies/" + id + "/series", type));
 
@@ -60,8 +59,12 @@ public class SeriesTable : MonoBehaviour
         entryTransform.Find("DescriptionTxt").GetComponent<Text>().text = series.description;
 
         Button button = entryTransform.Find("ActionBtn").GetComponent<Button>();
-        button.gameObject.SetActive(true);
 
+        Text buttonLabel = button.GetComponentInChildren<Text>();
+        if (series.bitspath == null) buttonLabel.text = "Download model";
+        else buttonLabel.text = "Load model";
+
+        button.gameObject.SetActive(true);
         button.onClick.AddListener(delegate { ActionButtonEvent(series); });
 
         transformList.Add(entryTransform);
@@ -80,7 +83,9 @@ public class SeriesTable : MonoBehaviour
 
     async public void ActionButtonEvent(Series series)
     {
-        await networkManager.Send("masterObj", series);
-        StartCoroutine(pyAPI.GetData(series));
+        if (series.bitspath != null) {
+            //await networkManager.Send("masterObj", series);
+            StartCoroutine(pyAPI.LoadModel(series));
+        }
     }
 }

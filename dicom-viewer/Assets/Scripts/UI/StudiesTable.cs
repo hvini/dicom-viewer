@@ -20,7 +20,7 @@ public class StudiesTable : MonoBehaviour
         }
     }
 
-    public IEnumerator GetPatientStudies(int id, GameObject patientsTable)
+    public IEnumerator GetPatientStudies(string id, GameObject patientsTable)
     {
 
         DestroyAll(studiesEntryTransformList);
@@ -58,7 +58,7 @@ public class StudiesTable : MonoBehaviour
 
         Button button = entryTransform.Find("ActionBtn").GetComponent<Button>();
         button.gameObject.SetActive(true);
-        button.onClick.AddListener(delegate { ActionButtonEvent(study.id); });
+        button.onClick.AddListener(delegate { ActionButtonEvent(study.instanceUID); });
 
         transformList.Add(entryTransform);
     }
@@ -74,7 +74,7 @@ public class StudiesTable : MonoBehaviour
         }
     }
 
-    public void ActionButtonEvent(int id)
+    public void ActionButtonEvent(string id)
     {
         SeriesTable seriesTable = GameObject.Find("Canvas").transform.Find("SeriesTable").GetComponent<SeriesTable>();
 

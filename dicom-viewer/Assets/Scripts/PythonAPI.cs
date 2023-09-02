@@ -9,6 +9,7 @@ using System.Text;
 using System.Linq;
 using CandyCoded.env;
 using UnityEngine.UI;
+using Newtonsoft.Json.Linq;
 
 [Serializable]
 public class Patients
@@ -38,6 +39,13 @@ public class Series
     public string filepath { get; set; }
     public string bitspath { get; set; }
     public string description { get; set; }
+    public int dimX { get; set; }
+    public int dimY { get; set; }
+    public int dimZ { get; set; }
+    public string pixelSpacing { get; set; }
+    public float scaleX { get; set; }
+    public float scaleY { get; set; }
+    public float scaleZ { get; set; }
 }
 
 [Serializable]
@@ -103,7 +111,7 @@ public class PythonAPI : MonoBehaviour
                     if (code.Equals("masterObj"))
                     {
                         Series series = (Series)networkManager.ParseMessage(data);
-                        StartCoroutine(GetData(series));
+                        StartCoroutine(LoadModel(series));
                     }
                 }
             }
@@ -123,18 +131,19 @@ public class PythonAPI : MonoBehaviour
             else
             {
                 string json = request.downloadHandler.text;
+                var jsonObj = JObject.Parse(json);
 
                 if (type == "patients")
                 {
-                    patients = JsonConvert.DeserializeObject<List<Patients>>(json);
+                    patients = JsonConvert.DeserializeObject<List<Patients>>(jsonObj["data"].ToString());
                 }
                 else if (type == "studies")
                 {
-                    studies = JsonConvert.DeserializeObject<List<Studies>>(json);
+                    studies = JsonConvert.DeserializeObject<List<Studies>>(jsonObj["data"].ToString());
                 }
                 else
                 {
-                    series = JsonConvert.DeserializeObject<List<Series>>(json);
+                    series = JsonConvert.DeserializeObject<List<Series>>(jsonObj["data"].ToString());
                 }
                 
                 Debug.Log("Data successfully retrieved!");
@@ -142,78 +151,58 @@ public class PythonAPI : MonoBehaviour
         }
     }
 
-    public IEnumerator GetData(Series series)
+    public IEnumerator LoadModel(Series series)
     {
-        //seriesBtns = GameObject.Find("Canvas")
-        //    .transform.Find("SeriesTable")
-        //    .transform.Find("SeriesEntryContainer").GetComponentsInChildren<Button>();
+        seriesBtns = GameObject.Find("Canvas")
+            .transform.Find("SeriesTable")
+            .transform.Find("SeriesEntryContainer").GetComponentsInChildren<Button>();
 
-        //DisableBtns(seriesBtns);
+        DisableBtns(seriesBtns);
 
         if (currentObj != null) Destroy(currentObj);
 
-        string path = series.filepath;
-        string bitspath = series.bitspath;
+        VolumeDataset dataset = JsonConvert.DeserializeObject<VolumeDataset>(JsonConvert.SerializeObject(series));
+        dataset.FixDimensions();
 
-        string uri = baseURL + "dicom/3d?path=" + path + "&bitspath=" + bitspath;
-
-        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        using (UnityWebRequest request = UnityWebRequest.Get(series.bitspath))
         {
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.ConnectionError)
             {
-                Debug.Log("Error on get data: " + request.error);
+                throw new Exception($"Failed to retrieve data from URL. Error: {request.error}");
             }
             else
             {
-                string json = request.downloadHandler.text;
-
-                VolumeDataset dataset = JsonConvert.DeserializeObject<VolumeDataset>(json);
-
-                dataset.FixDimensions();
-
-                if (bitspath == null) bitspath = dataset.bitspath;
-
-                using (UnityWebRequest request2 = UnityWebRequest.Get(baseURL + bitspath))
-                {
-                    yield return request2.SendWebRequest();
-
-                    if (request2.result == UnityWebRequest.Result.ConnectionError)
-                    {
-                        Debug.Log("Error on data download: " + request2.error);
-                    }
-                    else
-                    {
-                        dataset.jdlskald = request2.downloadHandler.data;
-
-                        VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
-                        obj.transform.position = new Vector3(0.0f, -1.0f, 1.3f);
-
-                        if (!networkManager.isMaster)
-                        {
-                            obj.transform.localScale = new Vector3(10.0f, 10.0f, 10.0f);
-                        }
-                        else
-                        {
-                            obj.tag = "Interactable";
-
-                            obj.gameObject.AddComponent<Rigidbody>();
-                            obj.GetComponent<Rigidbody>().useGravity = false;
-                            obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
-
-                            obj.gameObject.AddComponent<BoxCollider>();
-                            obj.gameObject.AddComponent<MouseDrag>();    
-                        }
-
-                        obj.gameObject.AddComponent<VolumePosition>();
-                        currentObj = obj.gameObject;
-
-                        //EnableBtns(seriesBtns);
-                    }
-                }
+                dataset.jdlskald = request.downloadHandler.data;
             }
         }
+
+        VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset, series);
+        obj.transform.position = new Vector3(0.0f, -1.0f, 1.3f);
+
+        if (!networkManager.isMaster)
+        {
+            obj.transform.localScale = new Vector3(10.0f, 10.0f, 10.0f);
+        }
+        else
+        {
+            obj.tag = "Interactable";
+
+            obj.gameObject.AddComponent<Rigidbody>();
+            obj.GetComponent<Rigidbody>().useGravity = false;
+            obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
+            obj.gameObject.AddComponent<BoxCollider>();
+            obj.gameObject.AddComponent<MouseDrag>();
+        }
+
+        obj.gameObject.AddComponent<VolumePosition>();
+        currentObj = obj.gameObject;
+
+        EnableBtns(seriesBtns);
+
+        yield return null;
     }
 
     private void DisableBtns(Button[] btns)
