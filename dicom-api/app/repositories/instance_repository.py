@@ -1,18 +1,36 @@
+""" instance repository module """
+
+from typing import Callable, Iterator
+from contextlib import AbstractContextManager
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models.instance_model import Instance
 
-class InstancesRepo:
-    
-        async def create(db: Session, item: schemas.InstancesCreate):
-            db_item = models.Instances(seriesID=item.seriesID, filename=item.filename)
-            db.add(db_item)
-            db.commit()
-            db.refresh(db_item)
 
-            return db_item
+class InstanceRepo:
+    """ instance repository class """
 
-        def fetch_all(db: Session, skip: int = 0, limit: int = 100):
-            return db.query(models.Instances).offset(skip).limit(limit).all()
+    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]) -> None:
+        self.session_factory = session_factory
 
-        def delete_by_series_id(db: Session, _id):
-            db.query(models.Instances).filter(models.Instances.seriesID == _id).delete()
+    async def create(self, item: Instance) -> Instance:
+        """ save instance """
+
+        with self.session_factory() as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+
+        return item
+
+    def fetch_all(self, skip: int = 0, limit: int = 100) -> Iterator[Instance]:
+        """ get all instances """
+
+        with self.session_factory() as session:
+            return session.query(Instance).offset(skip).limit(limit).all()
+
+    def delete_by_serie_id(self, serie_id) -> None:
+        """ delete instance by serie id """
+
+        with self.session_factory() as session:
+            session.query(Instance).filter(
+                Instance.seriesID == serie_id).delete()

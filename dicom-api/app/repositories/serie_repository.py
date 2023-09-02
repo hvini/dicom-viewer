@@ -1,34 +1,58 @@
+""" serie repository module """
+
+from typing import Callable, Iterator
+from contextlib import AbstractContextManager
 from sqlalchemy.orm import Session
-from app import models, schemas
-from fastapi import HTTPException
+from app.models.serie_model import Serie
+from app.schemas.serie_schema import SerieUpdate
+from app.models.instance_model import Instance
 
-class SeriesRepo:
 
-    async def create(db: Session, item: schemas.SeriesCreate):
-        db_item = models.Series(instanceUID=item.instanceUID, studyID=item.studyID, filepath=item.filepath, description=item.description)
-        db.add(db_item)
-        db.commit()
-        db.refresh(db_item)
-        
-        return db_item
+class SerieRepo:
+    """ serie repository class """
 
-    async def update(_id, db: Session, item: schemas.SeriesUpdate):
-        series = db.query(models.Series).filter(models.Series.id == _id).first()
-        if not series:
-            raise HTTPException(status_code=404, detail="Series not found")
-            
-        series.bitspath = item.bitspath
-        
-        db.commit()
-        db.refresh(series)
+    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]) -> None:
+        self.session_factory = session_factory
 
-        return series
+    async def create(self, item: Serie) -> Serie:
+        """ save serie """
 
-    def fetch_all(db: Session, skip: int = 0, limit: int = 100):
-        return db.query(models.Series).offset(skip).limit(limit).all()
+        with self.session_factory() as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
 
-    def fetch_by_id(db: Session, _id):
-        return db.query(models.Series).filter(models.Series.instanceUID == _id).first()
+        return item
 
-    def fetch_serie_instances(db: Session, _id):
-        return db.query(models.Instances).filter(models.Instances.seriesID == _id).all()
+    async def update(self, item: Serie, updates: SerieUpdate) -> Serie:
+        """ update serie """
+
+        with self.session_factory() as session:
+            update_data = updates.dict(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(item, key, value)
+
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+
+        return item
+
+    def fetch_all(self, skip: int = 0, limit: int = 100) -> Iterator[Serie]:
+        """ get all series """
+
+        with self.session_factory() as session:
+            return session.query(Serie).offset(skip).limit(limit).all()
+
+    def fetch_by_id(self, serie_id) -> Serie:
+        """ get serie by id """
+
+        with self.session_factory() as session:
+            return session.query(Serie).filter(
+                Serie.instanceUID == serie_id).first()
+
+    def fetch_serie_instances(self, serie_id) -> Iterator[Serie]:
+        """ get serie instances """
+
+        with self.session_factory() as session:
+            return session.query(Instance).filter(Instance.seriesID == serie_id).all()

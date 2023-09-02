@@ -1,12 +1,17 @@
-from pydicom.filereader import dcmread
-from pathlib import Path
-import numpy as np
-import os
+""" dicom util """
 
-def getAllData(files=None, path=None):
+from pathlib import Path
+import os
+from pydicom.filereader import dcmread
+import numpy as np
+
+
+def get_all_data(files=None, path=None):
+    """ get dicom slices """
+
     slices = []
-    if (files is None):
-        directory = Path(os.environ.get("BASE_PATH") + path)
+    if files is None:
+        directory = Path(f'{os.environ.get("BASE_PATH")}/{path}')
         dicom_list = list(directory.glob('*.dcm'))
         for dicom in dicom_list:
             slices.append(read(dicom))
@@ -14,15 +19,20 @@ def getAllData(files=None, path=None):
         for file in files:
             slices.append(read(file.file))
 
-    slices = calcSliceLocFromPos(slices)
+    slices = calc_slice_loc_from_position(slices)
     slices = sorted(slices, key=lambda s: s.SliceLocation)
 
     return slices
 
+
 def read(slice):
+    """ read dicom """
+
     return dcmread(slice)
 
-def to3dArray(slices):
+
+def to_3d_array(slices):
+    """ generate 3d array from slices """
 
     # create a new array of zeros with the same dimensions as the first slice
     img_shape = list(slices[0].pixel_array.shape)
@@ -31,18 +41,18 @@ def to3dArray(slices):
 
     # add the 3d image data to new array
     for i, s in enumerate(slices):
-        
-        slope = s.RescaleSlope
-        intercept = s.RescaleIntercept
+
+        # slope = s.RescaleSlope
+        # intercept = s.RescaleIntercept
 
         pixel_array = s.pixel_array
-        
+
         # Transform to Hounsfield Units
-        """ pixel_array = np.float64(pixel_array)
-        pixel_array *= slope
-        pixel_array += intercept
-        pixel_array = np.int16(pixel_array)
-        pixel_array = np.clip(pixel_array, -1024, 3071) """
+        # pixel_array = np.float64(pixel_array)
+        # pixel_array *= slope
+        # pixel_array += intercept
+        # pixel_array = np.int16(pixel_array)
+        # pixel_array = np.clip(pixel_array, -1024, 3071)
 
         img2d = pixel_array
         img3d[:, :, i] = img2d
@@ -52,8 +62,12 @@ def to3dArray(slices):
 
     return img3d
 
-def calcSliceLocFromPos(slices):
-    v = np.subtract(slices[1].ImagePositionPatient, slices[0].ImagePositionPatient)
+
+def calc_slice_loc_from_position(slices):
+    """ calculates slice location from image position """
+
+    v = np.subtract(slices[1].ImagePositionPatient,
+                    slices[0].ImagePositionPatient)
     v = v / np.linalg.norm(v)
     a = slices[0].ImagePositionPatient
     slices[0].SliceLocation = 0

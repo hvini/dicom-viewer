@@ -1,21 +1,43 @@
+""" study repository module """
+
+from typing import Callable, Iterator
+from contextlib import AbstractContextManager
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models.study_model import Study
+from app.models.serie_model import Serie
 
-class StudiesRepo:
 
-    async def create(db: Session, item: schemas.StudiesCreate):
-        db_item = models.Studies(instanceUID=item.instanceUID, patientID=item.patientID, description=item.description, time=item.time)
-        db.add(db_item)
-        db.commit()
-        db.refresh(db_item)
+class StudyRepo:
+    """ patient repository class """
 
-        return db_item
+    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]) -> None:
+        self.session_factory = session_factory
 
-    def fetch_all(db: Session, skip: int = 0, limit: int = 100):
-        return db.query(models.Studies).offset(skip).limit(limit).all()
+    async def create(self, item: Study) -> Study:
+        """ save study """
 
-    def fetch_by_id(db: Session, _id):
-        return db.query(models.Studies).filter(models.Studies.instanceUID == _id).first()
+        with self.session_factory() as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
 
-    def fetch_study_series(db: Session, _id):
-        return db.query(models.Series).filter(models.Series.studyID == _id).all()
+        return item
+
+    def fetch_all(self, skip: int = 0, limit: int = 100) -> Iterator[Study]:
+        """ get all studies """
+
+        with self.session_factory() as session:
+            return session.query(Study).offset(skip).limit(limit).all()
+
+    def fetch_by_id(self, study_id) -> Study:
+        """ get study by id """
+
+        with self.session_factory() as session:
+            return session.query(Study).filter(
+                Study.instanceUID == study_id).first()
+
+    def fetch_study_series(self, study_id) -> Iterator[Study]:
+        """ get study series """
+
+        with self.session_factory() as session:
+            return session.query(Serie).filter(Serie.studyID == study_id).all()

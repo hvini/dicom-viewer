@@ -1,21 +1,43 @@
+""" patient repository module """
+
+from typing import Callable, Iterator
+from contextlib import AbstractContextManager
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models.patient_model import Patient
+from app.models.study_model import Study
 
-class PatientsRepo:
 
-    async def create(db: Session, item: schemas.PatientsCreate):
-        db_item = models.Patients(patientID=item.patientID, name=item.name, birthDate=item.birthDate)
-        db.add(db_item)
-        db.commit()
-        db.refresh(db_item)
+class PatientRepo:
+    """ patient repository class """
 
-        return db_item
+    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]) -> None:
+        self.session_factory = session_factory
 
-    def fetch_all(db: Session, skip: int = 0, limit: int = 100):
-        return db.query(models.Patients).offset(skip).limit(limit).all()
+    async def create(self, item: Patient) -> Patient:
+        """ save patient """
 
-    def fetch_by_id(db: Session, _id):
-        return db.query(models.Patients).filter(models.Patients.patientID == _id).first()
+        with self.session_factory() as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
 
-    def fetch_patient_studies(db: Session, _id):
-        return db.query(models.Studies).filter(models.Studies.patientID == _id).all()
+        return item
+
+    def fetch_all(self, skip: int = 0, limit: int = 100) -> Iterator[Patient]:
+        """ get all patients """
+
+        with self.session_factory() as session:
+            return session.query(Patient).offset(skip).limit(limit).all()
+
+    def fetch_by_id(self, patient_id) -> Patient:
+        """ get a patient by id """
+
+        with self.session_factory() as session:
+            return session.query(Patient).filter(
+                Patient.patientID == patient_id).first()
+
+    def fetch_patient_studies(self, patient_id) -> Iterator[Patient]:
+        """ get patient studies """
+
+        with self.session_factory() as session:
+            return session.query(Study).filter(Study.patientID == patient_id).all()
